@@ -145,6 +145,77 @@ def test_mst_edge_count(n):
 
     assert mst.number_of_edges() == n - 1
 
+# --------------------------------------------------
+# PROPERTY TEST 4: MST NODE PRESERVATION
+# --------------------------------------------------
+
+@property_result_logger
+@given(st.integers(min_value=2, max_value=20))
+@settings(max_examples=30)
+def test_mst_contains_all_nodes(n):
+    """
+    Property:
+    Minimum spanning tree must preserve all graph nodes.
+
+    Mathematical reasoning:
+    A spanning tree must span every vertex.
+
+    Defect indication:
+    Missing nodes means algorithm failed to span graph.
+    """
+    G = create_connected_graph(n)
+    mst = nx.minimum_spanning_tree(G)
+
+    assert mst.number_of_nodes() == G.number_of_nodes()
+
+
+# --------------------------------------------------
+# PROPERTY TEST 5: IDEMPOTENCE
+# --------------------------------------------------
+
+@property_result_logger
+@given(st.integers(min_value=2, max_value=20))
+@settings(max_examples=30)
+def test_mst_idempotence(n):
+    """
+    Property:
+    Applying MST twice should yield same result.
+
+    Mathematical reasoning:
+    Once a graph is already a tree,
+    reapplying MST should not change it.
+
+    This is an idempotence property.
+    """
+    G = create_connected_graph(n)
+
+    mst1 = nx.minimum_spanning_tree(G)
+    mst2 = nx.minimum_spanning_tree(mst1)
+
+    assert set(mst1.edges()) == set(mst2.edges())
+
+
+# --------------------------------------------------
+# PROPERTY TEST 6: BOUNDARY CONDITION
+# --------------------------------------------------
+
+@property_result_logger
+def test_single_node_graph():
+    """
+    Boundary condition:
+    Graph with one node must have zero edges in MST.
+
+    Why important:
+    Edge cases often reveal hidden defects.
+    """
+    G = nx.Graph()
+    G.add_node(1)
+
+    mst = nx.minimum_spanning_tree(G)
+
+    assert mst.number_of_nodes() == 1
+    assert mst.number_of_edges() == 0
+
 
 # --------------------------------------------------
 # PROPERTY TEST 7: TRIANGLE INEQUALITY
@@ -232,7 +303,65 @@ def test_mst_is_acyclic(n):
     cycles = list(nx.cycle_basis(mst))
     assert len(cycles) == 0
 
+# --------------------------------------------------
+# PROPERTY TEST 10: SELF DISTANCE ZERO
+# --------------------------------------------------
 
+@property_result_logger
+@given(st.integers(min_value=1, max_value=20))
+@settings(max_examples=30)
+def test_node_distance_to_itself_zero(n):
+    """
+    Property:
+    The shortest path distance from any node to itself must always be zero.
+
+    Mathematical reasoning:
+    No edges need to be traversed to reach the same node, so the path length is always 0. This is a fundamental shortest-path invariant.
+
+    Test strategy:
+    For randomly generated connected graphs, verify that the distance from node 0 to itself is always zero.
+
+    Why this matters:
+    A non-zero value indicates a severe defect in shortest-path computation.
+    """
+    G = create_connected_graph(max(2, n))
+
+    assert nx.shortest_path_length(G, 0, 0) == 0
+
+
+# --------------------------------------------------
+# PROPERTY TEST 11: CONNECTED COMPONENTS IN CONNECTED GRAPH
+# --------------------------------------------------
+
+@property_result_logger
+@given(st.integers(min_value=2, max_value=20))
+@settings(max_examples=30)
+def test_connected_graph_has_one_component(n):
+    """
+    Property:
+    A connected graph must always have exactly one connected component.
+    """
+    G = create_connected_graph(n)
+    assert nx.number_connected_components(G) == 1
+
+
+# --------------------------------------------------
+# PROPERTY TEST 12: ISOLATED NODE INCREASES COMPONENT COUNT
+# --------------------------------------------------
+
+@property_result_logger
+@given(st.integers(min_value=2, max_value=20))
+@settings(max_examples=30)
+def test_adding_isolated_node_increases_components(n):
+    """
+    Property:
+    Adding an isolated node increases connected components by exactly one.
+    """
+    G = create_connected_graph(n)
+    before = nx.number_connected_components(G)
+    G.add_node(n + 100)
+    after = nx.number_connected_components(G)
+    assert after == before + 1
 
 # --------------------------------------------------
 # PROPERTY TEST 13: DEGREE CENTRALITY RANGE
@@ -289,7 +418,90 @@ def test_bfs_tree_edge_count(n):
 
     assert bfs_tree.number_of_edges() == n - 1
 
+# --------------------------------------------------
+# PROPERTY TEST 16: DFS TREE EDGE COUNT
+# --------------------------------------------------
 
+@property_result_logger
+@given(st.integers(min_value=2, max_value=20))
+@settings(max_examples=30)
+def test_dfs_tree_edge_count(n):
+    """
+    Property:
+    DFS tree of a connected graph must contain exactly n-1 edges.
+
+    Mathematical reasoning:
+    DFS traversal over connected graph produces spanning tree.
+    """
+    G = create_connected_graph(n)
+    dfs_tree = nx.dfs_tree(G, source=0)
+
+    assert dfs_tree.number_of_edges() == n - 1
+
+
+# --------------------------------------------------
+# PROPERTY TEST 17: GRAPH DIAMETER NON-NEGATIVE
+# --------------------------------------------------
+
+@property_result_logger
+@given(st.integers(min_value=2, max_value=20))
+@settings(max_examples=30)
+def test_graph_diameter_non_negative(n):
+    """
+    Property:
+    Diameter of any connected graph must be >= 0.
+
+    Mathematical reasoning:
+    Diameter is maximum shortest path distance.
+    Distances cannot be negative.
+    """
+    G = create_connected_graph(n)
+    diameter = nx.diameter(G)
+
+    assert diameter >= 0
+
+
+# --------------------------------------------------
+# PROPERTY TEST 18: CLUSTERING COEFFICIENT RANGE
+# --------------------------------------------------
+
+@property_result_logger
+@given(st.integers(min_value=3, max_value=20))
+@settings(max_examples=30)
+def test_clustering_coefficient_range(n):
+    """
+    Property:
+    Clustering coefficient must always lie in [0,1].
+
+    Mathematical reasoning:
+    It is a normalized probability-like measure.
+    """
+    G = create_connected_graph(n)
+    clustering = nx.clustering(G)
+
+    for value in clustering.values():
+        assert 0 <= value <= 1
+
+
+# --------------------------------------------------
+# PROPERTY TEST 19: EULER CHARACTERISTIC FOR TREE
+# --------------------------------------------------
+
+@property_result_logger
+@given(st.integers(min_value=2, max_value=20))
+@settings(max_examples=30)
+def test_tree_edges_equals_nodes_minus_one(n):
+    """
+    Property:
+    For any tree:
+    edges = nodes - 1
+
+    Mathematical reasoning:
+    Fundamental theorem of trees.
+    """
+    G = nx.path_graph(n)
+
+    assert G.number_of_edges() == G.number_of_nodes() - 1
 
 # --------------------------------------------------
 # PROPERTY TEST 20: SHORTEST PATH UPPER BOUND
