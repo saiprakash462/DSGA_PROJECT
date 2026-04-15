@@ -2,10 +2,31 @@
 E0 251o Project (2026)
 Property-Based Testing for NetworkX using Hypothesis
 
-Student-1 Name: Srinivas Shavukapu Kattegummula
-Student-2 Name: Polavarapu Hema Naga Sai Prakash
+Student-1 Name: Srinivas Shavukapu Kattegummula (SR No: 13-19-02-19-52-25-1-26388 )
+Student-2 Name: Polavarapu Hema Naga Sai Prakash (SR No: 13-19-01-19-52-25-1-26498 )
 Course: E0 251o
 
+Algorithms and Graph Properties Tested:
+1. Shortest Path Symmetry
+2. Shortest Path Non-Negative Distance
+3. Minimum Spanning Tree (MST) Edge Count
+4. MST Node Preservation
+5. MST Idempotence
+6. Single Node Graph Boundary Condition
+7. Triangle Inequality for Shortest Path
+8. MST Connectivity
+9. MST Acyclicity
+10. Self Distance Zero
+11. Connected Components Validation
+12. Isolated Node Component Increase
+13. Degree Centrality Range
+14. Complete Graph Equal Centrality
+15. BFS Tree Edge Count
+16. DFS Tree Edge Count
+17. Graph Diameter Non-Negativity
+18. Clustering Coefficient Range
+19. Tree Edge-Node Invariant
+20. Shortest Path Upper Bound
 
 Description:
 This file contains property-based tests for validating important mathematical
@@ -144,6 +165,7 @@ def test_mst_edge_count(n):
     mst = nx.minimum_spanning_tree(G)
 
     assert mst.number_of_edges() == n - 1
+
 
 # --------------------------------------------------
 # PROPERTY TEST 4: MST NODE PRESERVATION
@@ -303,6 +325,7 @@ def test_mst_is_acyclic(n):
     cycles = list(nx.cycle_basis(mst))
     assert len(cycles) == 0
 
+
 # --------------------------------------------------
 # PROPERTY TEST 10: SELF DISTANCE ZERO
 # --------------------------------------------------
@@ -327,6 +350,8 @@ def test_node_distance_to_itself_zero(n):
     G = create_connected_graph(max(2, n))
 
     assert nx.shortest_path_length(G, 0, 0) == 0
+
+
 
 
 # --------------------------------------------------
@@ -362,6 +387,7 @@ def test_adding_isolated_node_increases_components(n):
     G.add_node(n + 100)
     after = nx.number_connected_components(G)
     assert after == before + 1
+
 
 # --------------------------------------------------
 # PROPERTY TEST 13: DEGREE CENTRALITY RANGE
@@ -417,6 +443,7 @@ def test_bfs_tree_edge_count(n):
     bfs_tree = nx.bfs_tree(G, source=0)
 
     assert bfs_tree.number_of_edges() == n - 1
+
 
 # --------------------------------------------------
 # PROPERTY TEST 16: DFS TREE EDGE COUNT
@@ -502,6 +529,7 @@ def test_tree_edges_equals_nodes_minus_one(n):
     G = nx.path_graph(n)
 
     assert G.number_of_edges() == G.number_of_nodes() - 1
+
 
 # --------------------------------------------------
 # PROPERTY TEST 20: SHORTEST PATH UPPER BOUND
